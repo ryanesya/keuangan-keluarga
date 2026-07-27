@@ -285,12 +285,16 @@ async function initSupabaseSync(){
     supabaseClient = supabase;
 
     const { data, error } = await supabase.from('finance_data').select('data').eq('id', 'shared').single();
-    if(!error && data){
+    if(data){
+      // baris sudah ada di cloud — selalu pakai ini sebagai sumber kebenaran
       plans = data.data || [];
       saveLocalCache();
-    } else if(!firstSnapshotReceived){
-      // baris belum ada — migrasi data lokal (kalau ada) ke Supabase
+    } else if(error && error.code === 'PGRST116'){
+      // baris memang belum pernah ada sama sekali — inisialisasi sekali, migrasi data lokal (kalau ada)
       await supabase.from('finance_data').upsert({ id: 'shared', data: plans, updated_at: new Date().toISOString() });
+    } else if(error){
+      // error lain (network/RLS/dsb) — JANGAN sentuh data cloud, cukup pakai cache lokal & tandai gagal
+      throw error;
     }
     markSyncConnected();
     firstSnapshotReceived = true;
