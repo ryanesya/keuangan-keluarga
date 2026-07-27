@@ -266,10 +266,11 @@ async function savePlans(){
   saveLocalCache();
   if(SUPABASE_ENABLED && supabaseClient){
     try{
-      await supabaseClient
+      const result = await supabaseClient
         .from('finance_data')
         .update({ data: plans, updated_at: new Date().toISOString() })
         .eq('id', 'shared');
+      console.log('[Supabase] Hasil simpan:', result);
     }catch(e){
       console.error('Gagal menyimpan ke Supabase:', e);
       markSyncError();
@@ -303,6 +304,7 @@ async function initSupabaseSync(){
     supabase
       .channel('finance-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_data', filter: 'id=eq.shared' }, (payload) => {
+        console.log('[Supabase] Perubahan diterima:', payload);
         if(payload.new && payload.new.data){
           plans = payload.new.data;
           saveLocalCache();
@@ -310,6 +312,7 @@ async function initSupabaseSync(){
         }
       })
       .subscribe((status) => {
+        console.log('[Supabase] Status channel:', status);
         if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
           markSyncError();
           render();
