@@ -154,7 +154,9 @@
   }
   .sync-status{
     border-radius:14px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.5;margin-bottom:14px;
+    animation:sync-fade-in .25s ease-out;
   }
+  @keyframes sync-fade-in{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
   .sync-ok{background:#E6F6F1;border:2px solid var(--green);color:var(--green-dark);}
   .sync-connecting{background:#EFF6FF;border:2px solid #5FA8D3;color:#2E6A96;}
   .sync-error{background:#FFF0EF;border:2px solid var(--red);color:var(--red-dark);}
@@ -219,8 +221,8 @@
    pakai localStorage biasa (tanpa sync antar device).
 ================================================================ */
 const supabaseConfig = {
-  url: "https://svcxvbyeynoagtviazsx.supabase.co",
-  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2Y3h2YnlleW5vYWd0dmlhenN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxMDE2NzgsImV4cCI6MjEwMDY3NzY3OH0.wwk8FAD6JXdxvuUFFv52WwbuRI6qxWqNEAQWb6NKrbU"
+  url: "GANTI_DENGAN_SUPABASE_URL",
+  anonKey: "GANTI_DENGAN_ANON_KEY"
 };
 const SUPABASE_ENABLED = !!(supabaseConfig.url && !supabaseConfig.url.startsWith('GANTI'));
 
@@ -231,6 +233,24 @@ let state = { view: 'list', activePlanId: null };
 let syncState = SUPABASE_ENABLED ? 'connecting' : 'off'; // 'off' | 'connecting' | 'connected' | 'error'
 let supabaseClient = null;
 let firstSnapshotReceived = false;
+let syncBannerHidden = false;
+let syncBannerTimer = null;
+
+function markSyncConnected(){
+  syncState = 'connected';
+  if(!syncBannerHidden && !syncBannerTimer){
+    syncBannerTimer = setTimeout(() => {
+      syncBannerHidden = true;
+      syncBannerTimer = null;
+      render();
+    }, 2000);
+  }
+}
+function markSyncError(){
+  syncState = 'error';
+  syncBannerHidden = false;
+  if(syncBannerTimer){ clearTimeout(syncBannerTimer); syncBannerTimer = null; }
+}
 
 function loadLocalCache(){
   try{
@@ -252,7 +272,7 @@ async function savePlans(){
         .eq('id', 'shared');
     }catch(e){
       console.error('Gagal menyimpan ke Supabase:', e);
-      syncState = 'error';
+      markSyncError();
       render();
     }
   }
@@ -272,7 +292,7 @@ async function initSupabaseSync(){
       // baris belum ada — migrasi data lokal (kalau ada) ke Supabase
       await supabase.from('finance_data').upsert({ id: 'shared', data: plans, updated_at: new Date().toISOString() });
     }
-    syncState = 'connected';
+    markSyncConnected();
     firstSnapshotReceived = true;
     render();
 
@@ -287,13 +307,13 @@ async function initSupabaseSync(){
       })
       .subscribe((status) => {
         if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
-          syncState = 'error';
+          markSyncError();
           render();
         }
       });
   }catch(e){
     console.error('Gagal inisialisasi Supabase:', e);
-    syncState = 'error';
+    markSyncError();
     render();
   }
 }
@@ -301,6 +321,7 @@ async function initSupabaseSync(){
 function syncStatusHtml(){
   if(!SUPABASE_ENABLED) return '';
   if(syncState === 'connected'){
+    if(syncBannerHidden) return '';
     return `<div class="sync-status sync-ok">☁️ Sinkron aktif — data tersambung ke semua device</div>`;
   }
   if(syncState === 'error'){
