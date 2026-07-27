@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Keuangan Keluarga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1F7F6;
+    --card:#FFFFFF;
+    --border:#E3ECE9;
+    --ink:#213431;
+    --muted:#84988F;
+    --green:#0F6659;
+    --green-dark:#0B4F45;
+    --green-text:#0F6659;
+    --red:#E5484D;
+    --red-dark:#C93C41;
+    --blue:#D98E3B;
+    --yellow:#F2A93B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;touch-action:manipulation;}
+  body{
+    background:var(--bg);
+    font-family:'Nunito',system-ui,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+  }
+  h1,h2,h3,.heading{font-family:'Poppins',system-ui,sans-serif;}
+  #app{max-width:460px;margin:0 auto;padding:20px 16px 60px;}
+  .top-header{margin-bottom:18px;}
+  .top-header h1{font-size:24px;font-weight:800;margin:0;color:var(--ink);}
+  .subtitle{color:var(--muted);font-size:13px;margin:4px 0 0;font-weight:600;}
+
+  .card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px;}
+
+  /* --- create plan form --- */
+  .create-form{display:flex;gap:8px;margin-bottom:18px;}
+  .create-form input{flex:1;min-width:0;}
+  .btn{
+    border:none;border-radius:14px;padding:11px 18px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;
+    cursor:pointer;transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn-primary{background:var(--green);color:#fff;box-shadow:0 3px 8px rgba(15,102,89,.28);}
+  .btn-primary:active{transform:scale(.96);box-shadow:0 1px 4px rgba(15,102,89,.28);}
+  .btn-round{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:0;font-size:18px;}
+  input[type="text"]{
+    font-family:'Nunito',sans-serif;font-size:14px;color:var(--ink);font-weight:600;
+    padding:10px 12px;border-radius:12px;border:2px solid var(--border);background:#fff;
+    outline:none;
+  }
+  input[type="text"]:focus{border-color:var(--blue);}
+  input[type="text"]::placeholder{color:#C6C6C6;font-weight:600;}
+
+  /* --- plan list cards --- */
+  .plan-card{
+    background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;
+    cursor:pointer;position:relative;transition:transform .1s ease;
+  }
+  .plan-card:active{transform:scale(.985);}
+  .plan-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .plan-card-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;margin:0;padding-right:8px;}
+  .plan-card-sisa{font-weight:800;font-size:16px;white-space:nowrap;}
+  .plan-card-meta{display:flex;gap:14px;font-size:12px;color:var(--muted);font-weight:700;}
+  .plan-card-meta span{display:flex;align-items:center;gap:4px;}
+  .delete-btn{
+    position:absolute;top:12px;right:12px;background:none;border:none;color:#D3D3D3;
+    font-size:15px;cursor:pointer;padding:4px;line-height:1;
+  }
+  .delete-btn:hover{color:var(--red);}
+  .plan-card{padding-right:40px;}
+
+  .empty-state{text-align:center;padding:36px 16px;color:var(--muted);font-weight:700;}
+  .empty-state .emoji{font-size:34px;display:block;margin-bottom:8px;}
+
+  /* --- detail view --- */
+  .detail-top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .back-btn{background:none;border:none;color:var(--green-text);font-family:'Nunito',sans-serif;font-weight:800;
+    font-size:13px;cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:4px;}
+  .delete-plan-btn{background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;
+    font-size:12px;cursor:pointer;padding:6px 0;}
+  .delete-plan-btn:hover{color:var(--red);}
+  .title-input{
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:22px;color:var(--ink);
+    border:none;background:none;padding:2px 0;width:100%;outline:none;border-bottom:2px solid transparent;
+  }
+  .title-input:focus{border-bottom:2px solid var(--blue);}
+
+  .summary-card{
+    border-radius:18px;padding:18px;margin:14px 0;color:#fff;
+    background:linear-gradient(135deg,#12776A,#0A3E36);
+  }
+  .summary-label{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.8);font-size:12px;font-weight:700;margin-bottom:4px;}
+  .summary-amount{font-size:27px;font-weight:800;font-family:'Poppins',sans-serif;margin:0 0 12px;color:#fff;}
+  .progress-track{height:8px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;margin-bottom:12px;}
+  .progress-fill{height:100%;border-radius:99px;background:#fff;}
+  .summary-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;}
+  .summary-row div{display:flex;align-items:center;gap:5px;}
+  .summary-row .val{font-weight:800;}
+
+  /* --- chart --- */
+  .chart-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .donut{width:110px;height:110px;border-radius:50%;flex-shrink:0;position:relative;}
+  .donut::after{content:"";position:absolute;inset:20px;background:var(--card);border-radius:50%;}
+  .legend{flex:1;min-width:150px;display:flex;flex-direction:column;gap:7px;}
+  .legend-row{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .legend-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);}
+  .legend-pct{font-weight:800;color:var(--muted);}
+  .chart-empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0;font-weight:700;}
+  .section-title{display:flex;align-items:center;gap:6px;font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;margin:0 0 2px;}
+
+  /* --- income/expense sections --- */
+  .item-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:2px solid var(--border);}
+  .item-row:last-child{border-bottom:none;}
+  .item-left{display:flex;align-items:center;gap:9px;min-width:0;}
+  .item-emoji{font-size:19px;flex-shrink:0;}
+  .item-name{font-size:13.5px;color:var(--ink);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .item-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .item-amount{font-weight:800;font-size:13.5px;}
+  .item-del{background:none;border:none;color:#D3D3D3;cursor:pointer;font-size:13px;padding:3px;}
+  .item-del:hover{color:var(--red);}
+
+  .section-total{font-weight:800;font-size:14px;}
+  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .sort-row{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:8px;}
+  .sort-label{font-size:11px;color:var(--muted);font-weight:700;}
+  .sort-select{
+    font-family:'Nunito',sans-serif;font-size:11.5px;font-weight:700;color:var(--ink);
+    padding:5px 8px;border-radius:9px;border:2px solid var(--border);background:#fff;outline:none;
+  }
+
+  .empty-items{color:var(--muted);font-size:12px;margin:6px 0 12px;font-weight:700;}
+
+  .emoji-picker-row{display:flex;gap:8px;margin:10px 0 8px;}
+  .emoji-select{
+    flex:1;min-width:0;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink);
+    padding:10px 10px;border-radius:12px;border:2px solid var(--border);background:#fff;outline:none;
+  }
+  .emoji-select:focus{border-color:var(--blue);}
+
+  .add-form-row{display:flex;gap:8px;margin-top:4px;}
+  .add-form-row input[type=text]{flex:1;min-width:0;}
+  .amount-input{width:108px;flex-shrink:0;}
+
+  footer.note{text-align:center;color:var(--muted);font-size:11px;margin-top:18px;line-height:1.5;font-weight:600;}
+  .storage-warning{
+    background:#FFF4E5;border:2px solid #F2A93B;color:#8A5A12;border-radius:14px;
+    padding:10px 12px;font-size:12px;font-weight:700;line-height:1.5;margin-bottom:14px;
+  }
+  .sync-status{
+    border-radius:14px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.5;margin-bottom:14px;
+  }
+  .sync-ok{background:#E6F6F1;border:2px solid var(--green);color:var(--green-dark);}
+  .sync-connecting{background:#EFF6FF;border:2px solid #5FA8D3;color:#2E6A96;}
+  .sync-error{background:#FFF0EF;border:2px solid var(--red);color:var(--red-dark);}
+
+  /* --- recommendations --- */
+  .reco-tier-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:14px;margin:2px 0 4px;color:var(--green-text);}
+  .reco-tier-desc{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.5;}
+  .reco-empty{font-size:13px;color:var(--muted);margin:4px 0 0;line-height:1.5;}
+  .reco-teaser{font-size:12.5px;color:var(--muted);margin:0 0 12px;line-height:1.5;}
+  .reco-more-btn{background:var(--bg);border:2px solid var(--border);color:var(--green-text);font-family:'Nunito',sans-serif;
+    font-weight:800;font-size:12.5px;border-radius:12px;padding:10px 14px;cursor:pointer;width:100%;}
+  .reco-list{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+  .reco-item{display:flex;gap:10px;align-items:flex-start;}
+  .reco-emoji{font-size:20px;flex-shrink:0;margin-top:1px;}
+  .reco-name{font-weight:700;font-size:13px;color:var(--ink);margin-bottom:2px;}
+  .reco-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+  .reco-disclaimer{font-size:11px;color:#8A5A12;background:#FFF4E5;border-radius:10px;padding:9px 11px;margin-top:12px;line-height:1.5;font-weight:600;}
+
+  .proj-wrap{border-top:2px solid var(--border);padding-top:12px;margin-top:2px;}
+  .proj-title{font-size:12.5px;font-weight:700;color:var(--ink);margin:0 0 10px;}
+  .proj-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .proj-table th{text-align:right;color:var(--muted);font-weight:700;padding:4px 2px 8px;}
+  .proj-table th:first-child{text-align:left;}
+  .proj-table td{text-align:right;padding:7px 2px;border-top:1px solid var(--border);font-weight:700;color:var(--ink);white-space:nowrap;}
+  .proj-table td.proj-label{text-align:left;font-weight:700;line-height:1.4;}
+  .proj-rate{font-size:10px;font-weight:600;color:var(--muted);}
+
+  /* --- modal / bottom sheet --- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(20,30,28,.5);display:flex;align-items:flex-end;justify-content:center;
+    z-index:100;
+  }
+  .modal-sheet{
+    background:var(--card);width:100%;max-width:460px;border-radius:22px 22px 0 0;
+    padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:85vh;overflow-y:auto;
+    animation:sheet-up .18s ease-out;
+  }
+  @keyframes sheet-up{ from{ transform:translateY(24px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  .modal-handle{width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .modal-header h2{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;margin:0;}
+  .modal-close{background:var(--bg);border:none;width:30px;height:30px;border-radius:10px;color:var(--muted);
+    font-size:14px;cursor:pointer;flex-shrink:0;}
+
+  .confirm-sheet{text-align:center;padding-top:22px;}
+  .modal-message{font-size:14px;font-weight:700;color:var(--ink);line-height:1.5;margin:0 0 18px;}
+  .modal-actions{display:flex;gap:10px;}
+  .modal-actions .btn{flex:1;box-shadow:none;padding:12px;}
+  .modal-btn-cancel{background:var(--bg);color:var(--ink);}
+  .modal-btn-danger{background:var(--red);color:#fff;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ================================================================
+   SUPABASE SETUP — ganti nilai di bawah ini dengan config project
+   Supabase kamu (Project Settings > API > Project URL & anon public key).
+   Kalau dibiarkan seperti ini (belum diisi), app otomatis jalan
+   pakai localStorage biasa (tanpa sync antar device).
+================================================================ */
+const supabaseConfig = {
+  url: "sb_publishable_IL4gzBHexM0ENoNdUTaQaQ_1IK_H5mK",
+  anonKey: "sb_secret_isPse3G6PlWyR1zowMASgg_7q918BRp"
+};
+const SUPABASE_ENABLED = !!(supabaseConfig.url && !supabaseConfig.url.startsWith('GANTI'));
+
+/* ---------------- storage ---------------- */
+const STORAGE_KEY = 'keuangan-keluarga-plans-v1';
+let plans = [];
+let state = { view: 'list', activePlanId: null };
+let syncState = SUPABASE_ENABLED ? 'connecting' : 'off'; // 'off' | 'connecting' | 'connected' | 'error'
+let supabaseClient = null;
+let firstSnapshotReceived = false;
+
+function loadLocalCache(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    plans = raw ? JSON.parse(raw) : [];
+  }catch(e){ plans = []; }
+}
+function saveLocalCache(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(plans)); }catch(e){}
+}
+
+async function savePlans(){
+  saveLocalCache();
+  if(SUPABASE_ENABLED && supabaseClient){
+    try{
+      await supabaseClient
+        .from('finance_data')
+        .update({ data: plans, updated_at: new Date().toISOString() })
+        .eq('id', 'shared');
+    }catch(e){
+      console.error('Gagal menyimpan ke Supabase:', e);
+      syncState = 'error';
+      render();
+    }
+  }
+}
+
+async function initSupabaseSync(){
+  try{
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey);
+    supabaseClient = supabase;
+
+    const { data, error } = await supabase.from('finance_data').select('data').eq('id', 'shared').single();
+    if(!error && data){
+      plans = data.data || [];
+      saveLocalCache();
+    } else if(!firstSnapshotReceived){
+      // baris belum ada — migrasi data lokal (kalau ada) ke Supabase
+      await supabase.from('finance_data').upsert({ id: 'shared', data: plans, updated_at: new Date().toISOString() });
+    }
+    syncState = 'connected';
+    firstSnapshotReceived = true;
+    render();
+
+    supabase
+      .channel('finance-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_data', filter: 'id=eq.shared' }, (payload) => {
+        if(payload.new && payload.new.data){
+          plans = payload.new.data;
+          saveLocalCache();
+          render();
+        }
+      })
+      .subscribe((status) => {
+        if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
+          syncState = 'error';
+          render();
+        }
+      });
+  }catch(e){
+    console.error('Gagal inisialisasi Supabase:', e);
+    syncState = 'error';
+    render();
+  }
+}
+
+function syncStatusHtml(){
+  if(!SUPABASE_ENABLED) return '';
+  if(syncState === 'connected'){
+    return `<div class="sync-status sync-ok">☁️ Sinkron aktif — data tersambung ke semua device</div>`;
+  }
+  if(syncState === 'error'){
+    return `<div class="sync-status sync-error">⚠️ Gagal tersambung ke cloud. Cek koneksi internet atau konfigurasi Supabase. Data sementara dipakai dari penyimpanan lokal.</div>`;
+  }
+  return `<div class="sync-status sync-connecting">☁️ Menyambungkan ke cloud…</div>`;
+}
+
+function testStorage(){
+  try{
+    const k = '__storage_test__';
+    localStorage.setItem(k, '1');
+    localStorage.removeItem(k);
+    return true;
+  }catch(e){ return false; }
+}
+const storageOk = testStorage();
+function storageWarningHtml(){
+  if(SUPABASE_ENABLED || storageOk) return '';
+  return `<div class="storage-warning">⚠️ Penyimpanan browser tidak tersedia di tampilan ini (biasanya karena dibuka lewat preview). Unduh file HTML ini lalu buka langsung di browser (Chrome/Safari) supaya data tersimpan permanen.</div>`;
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+/* ---------------- helpers ---------------- */
+function formatRupiah(n){
+  const num = Number(n) || 0;
+  return 'Rp' + num.toLocaleString('id-ID');
+}
+function formatTyped(digitsStr){
+  if(!digitsStr) return '';
+  return Number(digitsStr).toLocaleString('id-ID');
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+const INCOME_CATEGORIES = [
+  {emoji:'💵', name:'Gaji'},
+  {emoji:'💰', name:'Tabungan'},
+  {emoji:'📈', name:'Investasi'},
+  {emoji:'🎁', name:'Hadiah'},
+  {emoji:'💼', name:'Bisnis'},
+  {emoji:'🏦', name:'Bonus'},
+  {emoji:'😊', name:'Lainnya'}
+];
+const EXPENSE_CATEGORIES = [
+  {emoji:'🛒', name:'Belanja'},
+  {emoji:'🏠', name:'Tempat Tinggal'},
+  {emoji:'🍔', name:'Makanan'},
+  {emoji:'🚗', name:'Transportasi'},
+  {emoji:'💡', name:'Tagihan'},
+  {emoji:'🎓', name:'Pendidikan'},
+  {emoji:'🎉', name:'Hiburan'},
+  {emoji:'🏥', name:'Kesehatan'},
+  {emoji:'✈️', name:'Liburan'},
+  {emoji:'📱', name:'Lainnya'}
+];
+const INCOME_EMOJIS = INCOME_CATEGORIES.map(c => c.emoji);
+const EXPENSE_EMOJIS = EXPENSE_CATEGORIES.map(c => c.emoji);
+function categoryName(emoji, kind){
+  const list = kind === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const found = list.find(c => c.emoji === emoji);
+  return found ? found.name : emoji;
+}
+const CHART_PALETTE = ['#0F6659','#F2A93B','#5FA8D3','#E5484D','#8FBF8B','#9B6B9E','#C97B3B','#4C9A8B'];
+
+let pendingIncomeEmoji = INCOME_EMOJIS[0];
+let pendingExpenseEmoji = EXPENSE_EMOJIS[0];
+
+/* ---------------- plan helpers ---------------- */
+function newPlan(title){
+  return {
+    id: uid(),
+    title: title && title.trim() ? title.trim() : 'Catatan Baru',
+    createdAt: Date.now(),
+    income: [],
+    expenses: []
+  };
+}
+function getActivePlan(){
+  return plans.find(p => p.id === state.activePlanId) || null;
+}
+function arrayKey(kind){ return kind === 'income' ? 'income' : 'expenses'; }
+function planTotals(plan){
+  const totalIncome = plan.income.reduce((s,i)=>s+i.amount,0);
+  const totalExpense = plan.expenses.reduce((s,i)=>s+i.amount,0);
+  return { totalIncome, totalExpense, remaining: totalIncome - totalExpense };
+}
+
+/* ---------------- render: list view ---------------- */
+function renderListView(){
+  let cardsHtml = '';
+  if(plans.length === 0){
+    cardsHtml = `
+      <div class="empty-state">
+        <span class="emoji">🗂️</span>
+        Belum ada catatan keuangan.<br/>Yuk buat yang pertama!
+      </div>`;
+  } else {
+    cardsHtml = plans.slice().sort((a,b)=>b.createdAt-a.createdAt).map(plan => {
+      const { totalIncome, totalExpense, remaining } = planTotals(plan);
+      const color = remaining >= 0 ? 'var(--green-text)' : 'var(--red-dark)';
+      return `
+        <div class="plan-card" data-action="open-plan" data-id="${plan.id}">
+          <button class="delete-btn" data-action="delete-plan" data-id="${plan.id}">✕</button>
+          <div class="plan-card-top">
+            <h3 class="plan-card-title">${escapeHtml(plan.title)}</h3>
+          </div>
+          <div class="plan-card-sisa" style="color:${color};">${remaining < 0 ? '-' : ''}${formatRupiah(Math.abs(remaining))}</div>
+          <div class="plan-card-meta" style="margin-top:8px;">
+            <span>📈 ${formatRupiah(totalIncome)}</span>
+            <span>📉 ${formatRupiah(totalExpense)}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  return `
+    ${storageWarningHtml()}
+    ${syncStatusHtml()}
+    <div class="top-header">
+      <h1>🌿 Daftar Keuangan</h1>
+      <p class="subtitle">Kelola catatan keuangan keluarga, bisa lebih dari satu ✨</p>
+    </div>
+    <div class="create-form">
+      <input type="text" id="new-plan-title" placeholder="Nama catatan, mis. Keuangan Juli" />
+      <button class="btn btn-primary" data-action="create-plan">+ Buat</button>
+    </div>
+    <div>${cardsHtml}</div>
+    <footer class="note">Data tersimpan di browser ini. Untuk berbagi dengan pasangan, kirim file HTML-nya dan buka di perangkat masing-masing.</footer>
+  `;
+}
+
+/* ---------------- render: chart ---------------- */
+function getRecommendationTier(remaining){
+  if(remaining <= 0){
+    return {
+      title: 'Belum Ada Sisa untuk Diinvestasikan',
+      desc: 'Sisa uang di catatan ini masih minus atau nol. Coba tinjau ulang pengeluaran dulu sebelum mikirin investasi.',
+      items: []
+    };
+  }
+  if(remaining < 1000000){
+    return {
+      title: 'Bangun Fondasi Dulu',
+      desc: 'Fokus ke instrumen yang aman & likuid dulu sebelum ambil risiko lebih besar.',
+      items: [
+        {emoji:'💰', name:'Tabungan digital berbunga', desc:'Bunga sekitar 3-4%/tahun, gampang dicairkan kapan saja.'},
+        {emoji:'📊', name:'Reksadana pasar uang', desc:'Return sekitar 4-5%/tahun, risiko sangat rendah.'}
+      ]
+    };
+  }
+  if(remaining < 5000000){
+    return {
+      title: 'Mulai Kejar Return di Atas Inflasi',
+      desc: 'Jumlah ini cukup untuk mulai masuk instrumen dengan return lebih baik dari tabungan biasa.',
+      items: [
+        {emoji:'🏛️', name:'SBN Ritel (ORI/SR/ST)', desc:'Kupon sekitar 6-7%/tahun, dijamin negara, cocok untuk pemula.'},
+        {emoji:'📈', name:'Reksadana pendapatan tetap', desc:'Risiko moderat-rendah, return lebih stabil dibanding saham.'}
+      ]
+    };
+  }
+  if(remaining < 20000000){
+    return {
+      title: 'Waktunya Diversifikasi',
+      desc: 'Mulai bagi ke beberapa instrumen dengan profil risiko berbeda.',
+      items: [
+        {emoji:'📊', name:'Reksadana saham / indeks', desc:'Untuk horizon panjang (5+ tahun), potensi return lebih tinggi.'},
+        {emoji:'🥇', name:'Emas digital', desc:'Hedging inflasi jangka panjang, bukan untuk cuan cepat.'},
+        {emoji:'🤝', name:'P2P lending', desc:'Return bisa 10-18%/tahun, tapi batasi maksimal 5-10% dari total portofolio karena risiko gagal bayar nyata.'}
+      ]
+    };
+  }
+  if(remaining < 100000000){
+    return {
+      title: 'Portofolio Mulai Matang',
+      desc: 'Di titik ini, kombinasi instrumen pasif dan aktif mulai masuk akal.',
+      items: [
+        {emoji:'📈', name:'Saham individual', desc:'Kalau sudah paham analisis dasar, bisa mulai porsi kecil-menengah.'},
+        {emoji:'🏛️', name:'SBN Ritel porsi lebih besar', desc:'Untuk stabilitas & pendapatan pasif rutin.'},
+        {emoji:'🏪', name:'Modal usaha kecil-menengah', desc:'Kalau ada skill/produk yang bisa dimonetisasi, potensi return jauh di atas instrumen pasif — tapi butuh waktu & tenaga, bukan cuma uang.'},
+        {emoji:'🏠', name:'DP properti kecil', desc:'Kos-kosan atau ruko, cocok untuk horizon panjang.'}
+      ]
+    };
+  }
+  return {
+    title: 'Saatnya Perencanaan Lebih Matang',
+    desc: 'Dengan jumlah sebesar ini, alokasi aset yang presisi mulai penting.',
+    items: [
+      {emoji:'🏠', name:'Properti sebagai aset produktif', desc:'Kos, ruko, atau unit sewa untuk pendapatan pasif jangka panjang.'},
+      {emoji:'📊', name:'Portofolio saham & obligasi terdiversifikasi', desc:'Sebar risiko ke berbagai instrumen dan sektor.'},
+      {emoji:'🏪', name:'Ekspansi usaha / modal bisnis skala besar', desc:'Kalau punya usaha yang sudah jalan, ini saat yang tepat buat scale up.'},
+      {emoji:'🧑‍💼', name:'Konsultasi financial planner profesional', desc:'Untuk strategi pajak & alokasi aset yang lebih presisi sesuai kondisimu.'}
+    ]
+  };
+}
+
+function renderProjection(principal){
+  const scenarios = [
+    { label:'Konservatif', rate:0.05, color:'var(--blue)' },
+    { label:'Moderat', rate:0.08, color:'var(--green)' },
+    { label:'Agresif', rate:0.12, color:'var(--red)' }
+  ];
+  const years = [1,3,5];
+  const rows = scenarios.map(s => {
+    const cells = years.map(y => `<td>${formatRupiah(Math.round(principal * Math.pow(1+s.rate, y)))}</td>`).join('');
+    return `<tr><td class="proj-label" style="color:${s.color}">${s.label}<br/><span class="proj-rate">${(s.rate*100).toFixed(0)}%/th</span></td>${cells}</tr>`;
+  }).join('');
+  return `
+    <div class="proj-wrap">
+      <p class="proj-title">📈 Ilustrasi Proyeksi (bukan jaminan return)</p>
+      <table class="proj-table">
+        <thead><tr><th></th><th>1 Thn</th><th>3 Thn</th><th>5 Thn</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderRecommendations(remaining){
+  const tier = getRecommendationTier(remaining);
+  if(remaining <= 0){
+    return `
+      <div class="card reco-card">
+        <h2 class="section-title">💡 Rekomendasi</h2>
+        <p class="reco-empty">${escapeHtml(tier.desc)}</p>
+      </div>`;
+  }
+  return `
+    <div class="card reco-card">
+      <h2 class="section-title">💡 Rekomendasi untuk ${formatRupiah(remaining)}</h2>
+      <p class="reco-tier-title">${escapeHtml(tier.title)}</p>
+      <p class="reco-teaser">${escapeHtml(tier.items[0] ? tier.items[0].name + ' — ' + tier.items[0].desc : tier.desc)}</p>
+      <button class="reco-more-btn" data-action="open-reco" data-remaining="${remaining}">Lihat rekomendasi lengkap →</button>
+    </div>`;
+}
+
+function renderChart(expenses){
+  if(!expenses.length){
+    return `<div class="chart-empty">📊 Belum ada pengeluaran untuk digambar</div>`;
+  }
+  const groupsMap = {};
+  expenses.forEach(item => {
+    if(!groupsMap[item.emoji]) groupsMap[item.emoji] = { emoji: item.emoji, amount: 0 };
+    groupsMap[item.emoji].amount += item.amount;
+  });
+  const groups = Object.values(groupsMap).sort((a,b) => b.amount - a.amount);
+  const total = expenses.reduce((s,i)=>s+i.amount,0);
+  let cumulative = 0;
+  const stops = [];
+  const legendItems = [];
+  groups.forEach((g, idx) => {
+    const pct = total > 0 ? (g.amount/total*100) : 0;
+    const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+    const start = cumulative;
+    const end = cumulative + pct;
+    stops.push(`${color} ${start}% ${end}%`);
+    cumulative = end;
+    legendItems.push(`
+      <div class="legend-row">
+        <span class="legend-dot" style="background:${color}"></span>
+        <span>${g.emoji}</span>
+        <span class="legend-name">${escapeHtml(categoryName(g.emoji, 'expense'))}</span>
+        <span class="legend-pct">${pct.toFixed(0)}%</span>
+      </div>`);
+  });
+  return `
+    <div class="chart-wrap">
+      <div class="donut" style="background:conic-gradient(${stops.join(',')})"></div>
+      <div class="legend">${legendItems.join('')}</div>
+    </div>`;
+}
+
+/* ---------------- render: item section ---------------- */
+let incomeSort = 'chrono-new';
+let expenseSort = 'chrono-new';
+
+const SORT_OPTIONS = [
+  {value:'chrono-new', label:'Terbaru Ditambahkan'},
+  {value:'chrono-old', label:'Terlama Ditambahkan'},
+  {value:'amount-desc', label:'Jumlah Terbesar'},
+  {value:'amount-asc', label:'Jumlah Terkecil'},
+  {value:'category', label:'Kategori'},
+  {value:'name', label:'Nama (A-Z)'}
+];
+
+function sortItems(items, sortBy, kind){
+  const arr = items.slice();
+  switch(sortBy){
+    case 'chrono-old': return arr;
+    case 'chrono-new': return arr.reverse();
+    case 'amount-desc': return arr.sort((a,b) => b.amount - a.amount);
+    case 'amount-asc': return arr.sort((a,b) => a.amount - b.amount);
+    case 'name': return arr.sort((a,b) => a.name.localeCompare(b.name, 'id'));
+    case 'category': return arr.sort((a,b) => categoryName(a.emoji, kind).localeCompare(categoryName(b.emoji, kind), 'id'));
+    default: return arr;
+  }
+}
+
+function renderSortSelect(kind, current){
+  const opts = SORT_OPTIONS.map(o => `<option value="${o.value}" ${o.value===current ? 'selected' : ''}>${o.label}</option>`).join('');
+  return `
+    <div class="sort-row">
+      <span class="sort-label">Urutkan</span>
+      <select class="sort-select" id="${kind}-sort-select">${opts}</select>
+    </div>`;
+}
+
+function renderItemList(items, kind){
+  if(!items.length){
+    return `<div class="empty-items">Belum ada catatan ${kind === 'income' ? 'pemasukan' : 'pengeluaran'}.</div>`;
+  }
+  const sortBy = kind === 'income' ? incomeSort : expenseSort;
+  const sorted = sortItems(items, sortBy, kind);
+  return sorted.map(item => `
+    <div class="item-row">
+      <div class="item-left">
+        <span class="item-emoji">${item.emoji}</span>
+        <span class="item-name">${escapeHtml(item.name)}</span>
+      </div>
+      <div class="item-right">
+        <span class="item-amount" style="color:var(--ink)">${formatRupiah(item.amount)}</span>
+        <button class="item-del" data-action="delete-${kind}-item" data-id="${item.id}">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderEmojiPicker(kind){
+  const categories = kind === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const pending = kind === 'income' ? pendingIncomeEmoji : pendingExpenseEmoji;
+  const options = categories.map(c => `
+    <option value="${c.emoji}" ${c.emoji===pending ? 'selected' : ''}>${c.emoji}  ${escapeHtml(c.name)}</option>
+  `).join('');
+  return `
+    <div class="emoji-picker-row">
+      <select class="emoji-select" id="${kind}-emoji-select">
+        ${options}
+      </select>
+    </div>`;
+}
+
+/* ---------------- render: detail view ---------------- */
+function renderDetailView(){
+  const plan = getActivePlan();
+  if(!plan){ state.view = 'list'; return renderListView(); }
+
+  const { totalIncome, totalExpense, remaining } = planTotals(plan);
+  const spentRatio = totalIncome > 0 ? Math.min(totalExpense/totalIncome, 1) : (totalExpense > 0 ? 1 : 0);
+  const remainingColor = remaining >= 0 ? '#7FD9C4' : '#F5B98A';
+
+  return `
+    ${storageWarningHtml()}
+    ${syncStatusHtml()}
+    <div class="detail-top-row">
+      <button class="back-btn" data-action="back">← Semua Catatan</button>
+      <button class="delete-plan-btn" data-action="delete-plan" data-id="${plan.id}">🗑️ Hapus</button>
+    </div>
+    <input type="text" class="title-input" id="plan-title-input" value="${escapeHtml(plan.title)}" placeholder="Nama catatan" />
+
+    <div class="summary-card">
+      <div class="summary-label">💼 Sisa Uang</div>
+      <p class="summary-amount" style="color:#fff">${remaining < 0 ? '-' : ''}${formatRupiah(Math.abs(remaining))}</p>
+      <div class="progress-track"><div class="progress-fill" style="width:${spentRatio*100}%; background:${remainingColor}"></div></div>
+      <div class="summary-row">
+        <div>📈 Masuk <span class="val">${formatRupiah(totalIncome)}</span></div>
+        <div>📉 Keluar <span class="val">${formatRupiah(totalExpense)}</span></div>
+      </div>
+    </div>
+
+    ${renderRecommendations(remaining)}
+
+    <div class="card">
+      <h2 class="section-title">🥧 Sebaran Pengeluaran</h2>
+      ${renderChart(plan.expenses)}
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h2 class="section-title" style="margin:0;">🌱 Pemasukan</h2>
+        <span class="section-total" style="color:var(--green-text)">${formatRupiah(totalIncome)}</span>
+      </div>
+      ${plan.income.length > 1 ? renderSortSelect('income', incomeSort) : ''}
+      ${renderItemList(plan.income, 'income')}
+      ${renderEmojiPicker('income')}
+      <div class="add-form-row">
+        <input type="text" id="income-name-input" placeholder="Nama pemasukan" />
+        <input type="text" inputmode="numeric" class="amount-input" id="income-amount-input" placeholder="Jumlah" />
+        <button class="btn btn-primary btn-round" style="background:var(--green-text)" data-action="add-income">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h2 class="section-title" style="margin:0;">🛍️ Pengeluaran</h2>
+        <span class="section-total" style="color:var(--red-dark)">${formatRupiah(totalExpense)}</span>
+      </div>
+      ${plan.expenses.length > 1 ? renderSortSelect('expense', expenseSort) : ''}
+      ${renderItemList(plan.expenses, 'expense')}
+      ${renderEmojiPicker('expense')}
+      <div class="add-form-row">
+        <input type="text" id="expense-name-input" placeholder="Nama pengeluaran" />
+        <input type="text" inputmode="numeric" class="amount-input" id="expense-amount-input" placeholder="Jumlah" />
+        <button class="btn btn-primary btn-round" data-action="add-expense">+</button>
+      </div>
+    </div>
+
+    <footer class="note">Data tersimpan otomatis di browser ini.</footer>
+  `;
+}
+
+/* ---------------- main render ---------------- */
+let modalState = null;
+
+function closeModal(){
+  modalState = null;
+  renderModal();
+}
+
+function requestDeletePlan(id){
+  const plan = plans.find(p => p.id === id);
+  modalState = {
+    type: 'confirm',
+    message: `Hapus catatan "${plan ? plan.title : 'ini'}"? Semua datanya akan hilang permanen.`,
+    onConfirm: () => {
+      plans = plans.filter(p => p.id !== id);
+      savePlans();
+      if(state.activePlanId === id){ state.view = 'list'; state.activePlanId = null; }
+      render();
+    }
+  };
+  renderModal();
+}
+
+function openRecoModal(remaining){
+  modalState = { type: 'reco', remaining };
+  renderModal();
+}
+
+function renderModal(){
+  const root = document.getElementById('modal-root');
+  if(!modalState){ root.innerHTML = ''; return; }
+  if(modalState.type === 'confirm'){
+    root.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal-sheet confirm-sheet">
+          <p class="modal-message">${escapeHtml(modalState.message)}</p>
+          <div class="modal-actions">
+            <button class="btn modal-btn-cancel" data-modal-action="cancel">Batal</button>
+            <button class="btn modal-btn-danger" data-modal-action="confirm">Hapus</button>
+          </div>
+        </div>
+      </div>`;
+  } else if(modalState.type === 'reco'){
+    const tier = getRecommendationTier(modalState.remaining);
+    const itemsHtml = tier.items.map(it => `
+      <div class="reco-item">
+        <span class="reco-emoji">${it.emoji}</span>
+        <div class="reco-text">
+          <div class="reco-name">${escapeHtml(it.name)}</div>
+          <div class="reco-desc">${escapeHtml(it.desc)}</div>
+        </div>
+      </div>`).join('');
+    root.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <div class="modal-header">
+            <h2>💡 Rekomendasi Lengkap</h2>
+            <button class="modal-close" data-modal-action="close">✕</button>
+          </div>
+          <p class="reco-tier-title">${escapeHtml(tier.title)}</p>
+          <p class="reco-tier-desc">${escapeHtml(tier.desc)}</p>
+          <div class="reco-list">${itemsHtml}</div>
+          ${modalState.remaining > 0 ? renderProjection(modalState.remaining) : ''}
+          <p class="reco-disclaimer">⚠️ Ini kerangka umum, bukan saran finansial personal. Sesuaikan dengan profil risiko & tujuan keuanganmu sendiri.</p>
+        </div>
+      </div>`;
+  }
+  root.onclick = (e) => {
+    if(e.target.classList.contains('modal-backdrop')){ closeModal(); return; }
+    const el = e.target.closest('[data-modal-action]');
+    if(!el) return;
+    const action = el.dataset.modalAction;
+    if(action === 'close' || action === 'cancel'){ closeModal(); }
+    else if(action === 'confirm'){
+      if(modalState && modalState.onConfirm) modalState.onConfirm();
+      closeModal();
+    }
+  };
+}
+
+function render(){
+  const scrollY = window.scrollY;
+  const app = document.getElementById('app');
+  app.innerHTML = state.view === 'list' ? renderListView() : renderDetailView();
+  attachListeners();
+  window.scrollTo(0, scrollY);
+}
+
+/* ---------------- event handling ---------------- */
+function attachListeners(){
+  const app = document.getElementById('app');
+
+  app.onclick = (e) => {
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    const id = el.dataset.id;
+
+    if(action === 'create-plan'){
+      const input = document.getElementById('new-plan-title');
+      const plan = newPlan(input.value);
+      plans.push(plan);
+      savePlans();
+      state.view = 'detail';
+      state.activePlanId = plan.id;
+      render();
+    }
+    else if(action === 'open-plan'){
+      state.view = 'detail';
+      state.activePlanId = id;
+      pendingIncomeEmoji = INCOME_EMOJIS[0];
+      pendingExpenseEmoji = EXPENSE_EMOJIS[0];
+      render();
+    }
+    else if(action === 'delete-plan'){
+      requestDeletePlan(id);
+    }
+    else if(action === 'back'){
+      state.view = 'list';
+      state.activePlanId = null;
+      render();
+    }
+    else if(action === 'add-income' || action === 'add-expense'){
+      const kind = action === 'add-income' ? 'income' : 'expense';
+      addItem(kind);
+    }
+    else if(action === 'open-reco'){
+      openRecoModal(Number(el.dataset.remaining));
+    }
+    else if(action === 'delete-income-item' || action === 'delete-expense-item'){
+      const kind = action === 'delete-income-item' ? 'income' : 'expense';
+      const plan = getActivePlan();
+      if(!plan) return;
+      plan[arrayKey(kind)] = plan[arrayKey(kind)].filter(i => i.id !== id);
+      savePlans();
+      render();
+    }
+  };
+
+  // live thousand-separator formatting on amount fields
+  ['income-amount-input','expense-amount-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', () => {
+      const digits = el.value.replace(/[^0-9]/g,'');
+      el.value = formatTyped(digits);
+    });
+    el.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        const kind = id.startsWith('income') ? 'income' : 'expense';
+        addItem(kind);
+      }
+    });
+  });
+  ['income-name-input','expense-name-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        const kind = id.startsWith('income') ? 'income' : 'expense';
+        addItem(kind);
+      }
+    });
+  });
+
+  // sort dropdowns
+  ['income','expense'].forEach(kind => {
+    const sortEl = document.getElementById(kind + '-sort-select');
+    if(sortEl){
+      sortEl.addEventListener('change', () => {
+        if(kind === 'income') incomeSort = sortEl.value; else expenseSort = sortEl.value;
+        render();
+      });
+    }
+  });
+
+  // emoji dropdown
+  ['income','expense'].forEach(kind => {
+    const select = document.getElementById(kind + '-emoji-select');
+    if(select){
+      select.addEventListener('change', () => {
+        if(kind === 'income') pendingIncomeEmoji = select.value; else pendingExpenseEmoji = select.value;
+      });
+    }
+  });
+
+  // title editing
+  const titleInput = document.getElementById('plan-title-input');
+  if(titleInput){
+    const commit = () => {
+      const plan = getActivePlan();
+      if(!plan) return;
+      plan.title = titleInput.value.trim() || 'Tanpa Judul';
+      savePlans();
+    };
+    titleInput.addEventListener('blur', commit);
+    titleInput.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ titleInput.blur(); } });
+  }
+}
+
+function addItem(kind){
+  const plan = getActivePlan();
+  if(!plan) return;
+  const nameEl = document.getElementById(kind + '-name-input');
+  const amountEl = document.getElementById(kind + '-amount-input');
+  const name = nameEl.value.trim();
+  const amount = Number(amountEl.value.replace(/[^0-9]/g,''));
+  if(!name || !amount) return;
+  const emoji = kind === 'income' ? pendingIncomeEmoji : pendingExpenseEmoji;
+  plan[arrayKey(kind)].push({ id: uid(), emoji, name, amount });
+  savePlans();
+  if(kind === 'income') pendingIncomeEmoji = INCOME_EMOJIS[0]; else pendingExpenseEmoji = EXPENSE_EMOJIS[0];
+  render();
+}
+
+/* ---------------- prevent pinch / double-tap zoom ---------------- */
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('touchmove', e => { if(e.touches && e.touches.length > 1) e.preventDefault(); }, { passive:false });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if(now - lastTouchEnd <= 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive:false });
+
+/* ---------------- init ---------------- */
+loadLocalCache();
+render();
+if(SUPABASE_ENABLED){
+  initSupabaseSync();
+}
+</script>
+</body>
+</html>
